@@ -3,21 +3,22 @@ package ru.spbstu.icc.kspt.lab2.continuewatch
 import android.content.Context
 import android.content.SharedPreferences
 import android.os.Bundle
+import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import kotlinx.android.synthetic.main.activity_main.*
 
 
 class MainActivity : AppCompatActivity() {
     var secondsElapsed: Int = 0
-
+    val TAG = "States"
     private lateinit var mSettings: SharedPreferences
 
-
+    var stop = true
     private var backgroundThread = Thread {
-        while (true) {
+        while (stop) {
             Thread.sleep(1000)
             textSecondsElapsed.post {
-                textSecondsElapsed.setText("Seconds elapsed: " + secondsElapsed++)
+                textSecondsElapsed.text = "Seconds elapsed: " + secondsElapsed++
             }
         }
     }
@@ -25,19 +26,52 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-        mSettings=getSharedPreferences("myPref", Context.MODE_PRIVATE)
-        backgroundThread.start()
+        Log.d(TAG, "MainActivity: onCreate()")
     }
 
     override fun onResume() {
         super.onResume()
-        secondsElapsed=mSettings.getInt("seconds",secondsElapsed);
+        mSettings=getSharedPreferences("myPref", Context.MODE_PRIVATE)
+        secondsElapsed=mSettings.getInt("seconds",0)
+        stop = true
+        backgroundThread = Thread {
+            while (stop) {
+                Thread.sleep(1000)
+                textSecondsElapsed.post {
+                    textSecondsElapsed.text = "Seconds elapsed: " + secondsElapsed++
+                }
+            }
+        }
+        backgroundThread.start()
+        Log.d(TAG, "MainActivity: onResume()")
     }
 
     override fun onPause() {
         super.onPause()
+        stop = false
         val editor = mSettings.edit()
         editor.putInt("seconds",secondsElapsed)
         editor.apply()
+        Log.d(TAG, "MainActivity: onPause()")
+    }
+
+    override fun onStart() {
+        super.onStart()
+        Log.d(TAG, "MainActivity: onStart()")
+    }
+
+    override fun onStop() {
+        super.onStop()
+        Log.d(TAG, "MainActivity: onStop()")
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        Log.d(TAG, "MainActivity: onDestroy()")
+    }
+
+    override fun onRestart() {
+        super.onRestart()
+        Log.d(TAG, "MainActivity: onRestart()")
     }
 }
