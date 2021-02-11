@@ -14,11 +14,14 @@ class MainActivity : AppCompatActivity() {
     private lateinit var mSettings: SharedPreferences
 
     var stop = true
+
     private var backgroundThread = Thread {
-        while (stop) {
+        while (true) {
             Thread.sleep(1000)
-            textSecondsElapsed.post {
-                textSecondsElapsed.text = "Seconds elapsed: " + secondsElapsed++
+            if(stop) {
+                textSecondsElapsed.post {
+                  textSecondsElapsed.text = "Seconds elapsed: " + secondsElapsed++
+                }
             }
         }
     }
@@ -26,6 +29,7 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+        backgroundThread.start()
         Log.d(TAG, "MainActivity: onCreate()")
     }
 
@@ -34,15 +38,6 @@ class MainActivity : AppCompatActivity() {
         mSettings=getSharedPreferences("myPref", Context.MODE_PRIVATE)
         secondsElapsed=mSettings.getInt("seconds",0)
         stop = true
-        backgroundThread = Thread {
-            while (stop) {
-                Thread.sleep(1000)
-                textSecondsElapsed.post {
-                    textSecondsElapsed.text = "Seconds elapsed: " + secondsElapsed++
-                }
-            }
-        }
-        backgroundThread.start()
         Log.d(TAG, "MainActivity: onResume()")
     }
 
